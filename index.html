@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>围魏救赵：奇兵解围 - 三十六计第二计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 游戏容器 */
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 顶部信息栏 */
+        #topBar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 2px solid #8b4513;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            #topBar {
+                flex-wrap: wrap;
+                padding: 10px 8px;
+                gap: 8px;
+                justify-content: space-around;
+            }
+            .info-item {
+                font-size: 11px;
+                gap: 4px;
+                flex: 1 1 calc(50% - 4px);
+                min-width: calc(50% - 4px);
+                justify-content: center;
+            }
+            .info-item span:first-child {
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #topBar {
+                padding: 8px 5px;
+                gap: 5px;
+            }
+            .info-item {
+                font-size: 10px;
+                gap: 3px;
+            }
+        }
+
+        .bar-container {
+            width: 150px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #8b4513;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .bar-container {
+                width: 80px;
+                height: 16px;
+                border-width: 1.5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bar-container {
+                width: 70px;
+                height: 14px;
+            }
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.3s;
+            border-radius: 8px;
+        }
+
+        .bar-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        @media (max-width: 768px) {
+            .bar-text {
+                font-size: 9px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bar-text {
+                font-size: 8px;
+            }
+        }
+
+        /* Canvas画布 */
+        #gameCanvas {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #87ceeb 0%, #98d8c8 30%, #f7dc6f 60%, #85c1e2 100%);
+            cursor: crosshair;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 底部按钮栏 */
+        #buttonBar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 2px solid #8b4513;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            #buttonBar {
+                padding: 12px 8px;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #buttonBar {
+                padding: 10px 5px;
+                gap: 6px;
+            }
+        }
+
+        .game-btn {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8b4513, #a0522d);
+            color: #fff;
+            border: 2px solid #654321;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            min-width: 120px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 768px) {
+            .game-btn {
+                padding: 18px 10px;
+                font-size: 14px;
+                min-width: calc(50% - 4px);
+                flex: 1 1 calc(50% - 4px);
+                border-width: 2px;
+                border-radius: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-btn {
+                padding: 16px 8px;
+                font-size: 13px;
+                min-width: calc(50% - 3px);
+                flex: 1 1 calc(50% - 3px);
+                border-width: 2px;
+            }
+        }
+
+        .game-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #a0522d, #cd853f);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+        }
+
+        .game-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 弹窗遮罩 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #2c1810, #3d2817);
+            border: 3px solid #8b4513;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 20px 15px;
+                max-width: 95%;
+                margin: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                padding: 15px 12px;
+                max-width: 98%;
+                margin: 5px;
+            }
+        }
+
+        .modal h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .modal h2 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal h2 {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+        }
+
+        .modal p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .modal p {
+                font-size: 14px;
+                line-height: 1.6;
+                margin-bottom: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal p {
+                font-size: 13px;
+                line-height: 1.5;
+                margin-bottom: 10px;
+            }
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #8b4513, #a0522d);
+            color: #fff;
+            border: 2px solid #654321;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .modal-btn:hover {
+            background: linear-gradient(135deg, #a0522d, #cd853f);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .modal-btn {
+                padding: 14px 25px;
+                font-size: 15px;
+                margin-top: 15px;
+                min-height: 48px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+                margin-top: 12px;
+                min-height: 44px;
+                width: 100%;
+            }
+        }
+
+        /* 粒子效果容器 */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* 失败红色遮罩 */
+        .red-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(139, 0, 0, 0.6);
+            z-index: 600;
+            display: none;
+            animation: redFlash 0.5s;
+        }
+
+        .red-overlay.show {
+            display: block;
+        }
+
+        @keyframes redFlash {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+        }
+
+        /* 胜利动画 */
+        .victory-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
+            z-index: 700;
+            display: none;
+            animation: victoryPulse 1s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .victory-text {
+                font-size: 32px;
+                padding: 0 20px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .victory-text {
+                font-size: 24px;
+                padding: 0 15px;
+            }
+        }
+
+        .victory-text.show {
+            display: block;
+        }
+
+        @keyframes victoryPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- 顶部信息栏 -->
+        <div id="topBar">
+            <div class="info-item">
+                <span>⚔️ 齐军兵力:</span>
+                <div class="bar-container">
+                    <div class="bar-fill" id="qiBar" style="width: 100%;"></div>
+                    <div class="bar-text" id="qiText">1000</div>
+                </div>
+            </div>
+            <div class="info-item">
+                <span>⏱️ 时间:</span>
+                <span id="timeText">60</span>秒
+            </div>
+            <div class="info-item">
+                <span>📜 关卡:</span>
+                <span id="levelText">1/5</span>
+            </div>
+            <div class="info-item">
+                <span>🏆 得分:</span>
+                <span id="scoreText">0</span>
+            </div>
+        </div>
+
+        <!-- Canvas游戏画布 -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- 底部按钮栏 -->
+        <div id="buttonBar">
+            <button class="game-btn" id="btnAttackGranary">派100兵攻粮仓 🏛️</button>
+            <button class="game-btn" id="btnAttackWeiCapital">派300兵攻魏都 🏰</button>
+            <button class="game-btn" id="btnRescueZhao">派200兵救赵国 🏯</button>
+            <button class="game-btn" id="btnHardAttack">硬攻主力（自杀）⚔️</button>
+        </div>
+    </div>
+
+    <!-- 粒子效果容器 -->
+    <div id="particles"></div>
+
+    <!-- 失败红色遮罩 -->
+    <div class="red-overlay" id="redOverlay"></div>
+
+    <!-- 胜利文字 -->
+    <div class="victory-text" id="victoryText">🎉 胜利！围魏救赵成功！🎉</div>
+
+    <!-- 教程弹窗 -->
+    <div class="modal" id="tutorialModal">
+        <div class="modal-content">
+            <h2>📖 围魏救赵 - 游戏教程</h2>
+            <p><strong>三十六计第二计：围魏救赵</strong></p>
+            <p>公元前354年，魏国围攻赵国都城邯郸。齐国派田忌、孙膑率军救赵。</p>
+            <p><strong>策略：</strong>不直接救赵，而是攻打魏国都城大梁，迫使魏军回防，从而解赵国之围。</p>
+            <p><strong>玩法：</strong></p>
+            <p>1️⃣ 先点击"攻魏都"（派300兵），迫使魏主力回防</p>
+            <p>2️⃣ 趁魏军回防的空档，点击"救赵国"（派200兵）</p>
+            <p>3️⃣ 避免"硬攻主力"（会立即失败）</p>
+            <p>4️⃣ 通过5关即可胜利！</p>
+            <button class="modal-btn" onclick="startGame()">开始游戏</button>
+        </div>
+    </div>
+
+    <!-- 胜利弹窗 -->
+    <div class="modal" id="victoryModal">
+        <div class="modal-content">
+            <h2>🎉 恭喜！围魏救赵成功！</h2>
+            <p><strong>最终得分：<span id="finalScore">0</span></strong></p>
+            <p>你成功运用"围魏救赵"之计，通过围困魏国都城，迫使魏军回防，从而解救了赵国！</p>
+            <p><strong>历史意义：</strong></p>
+            <p>此计体现了"攻其所必救"的军事智慧，通过攻击敌人要害，迫使其放弃当前目标，达到间接救援的目的。</p>
+            <button class="modal-btn" onclick="restartGame()">再来一局</button>
+        </div>
+    </div>
+
+    <!-- 失败弹窗 -->
+    <div class="modal" id="failModal">
+        <div class="modal-content">
+            <h2>💀 兵败如山倒</h2>
+            <p>你的军队被击败了！</p>
+            <p>记住：围魏救赵的关键是"攻其所必救"，而不是硬碰硬！</p>
+            <button class="modal-btn" onclick="restartGame()">重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 游戏状态 ====================
+        const gameState = {
+            // 基础数据
+            qiTroops: 1000,          // 齐军兵力
+            weiMainForce: 1000,      // 魏主力兵力
+            timeLeft: 60,            // 剩余时间（秒）
+            level: 1,                // 当前关卡
+            maxLevel: 5,             // 最大关卡
+            score: 0,                // 得分
+            gameStarted: false,      // 游戏是否开始
+            
+            // 状态标志
+            weiRetreating: false,    // 魏军是否正在回防
+            retreatTimeLeft: 0,      // 回防剩余时间
+            zhaoRescued: false,      // 赵国是否已解救
+            gameOver: false,         // 游戏是否结束
+            
+            // 关卡难度
+            weiReinforcements: 0,    // 魏援军数量（关3+）
+            multipleTargets: false,  // 是否多必救点（关5）
+            
+            // 动画对象
+            troops: [],              // 所有移动的军队
+            particles: [],           // 粒子效果
+        };
+
+        // ==================== Canvas设置 ====================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 响应式Canvas
+        function resizeCanvas() {
+            const topBar = document.getElementById('topBar');
+            const buttonBar = document.getElementById('buttonBar');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - topBar.offsetHeight - buttonBar.offsetHeight;
+            
+            // 手机端优化：确保Canvas有足够空间
+            if (window.innerWidth <= 480) {
+                // 小屏幕设备，进一步优化
+                canvas.style.minHeight = '200px';
+            }
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        // 监听方向变化
+        window.addEventListener('orientationchange', () => {
+            setTimeout(resizeCanvas, 100);
+        });
+
+        // ==================== 地图位置定义 ====================
+        const mapPositions = {
+            qiBase: { x: 0.1, y: 0.5, emoji: '⚔️', name: '齐军基地' },
+            zhao: { x: 0.5, y: 0.5, emoji: '🏯', name: '赵国', underSiege: true },
+            weiMain: { x: 0.85, y: 0.2, emoji: '🏰', name: '魏主力寨' },
+            weiCapital: { x: 0.9, y: 0.8, emoji: '🏛️', name: '魏都粮仓', glitter: true },
+        };
+
+        // 关卡5添加副都
+        function getMapPositions() {
+            const positions = { ...mapPositions };
+            if (gameState.level >= 5 && gameState.multipleTargets) {
+                positions.weiSubCapital = { x: 0.7, y: 0.9, emoji: '🏛️', name: '魏副都', glitter: true };
+            }
+            return positions;
+        }
+
+        // ==================== 音效系统 ====================
+        function playBeep(frequency = 440, duration = 100, type = 'sine') {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration / 1000);
+            } catch (e) {
+                // 音效失败不影响游戏
+            }
+        }
+
+        // ==================== 粒子系统 ====================
+        function createParticles(x, y, color = '#ff6b6b', count = 20) {
+            for (let i = 0; i < count; i++) {
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 1.0,
+                    decay: 0.02 + Math.random() * 0.03,
+                    size: 3 + Math.random() * 5,
+                    color: color
+                });
+            }
+        }
+
+        function updateParticles() {
+            gameState.particles = gameState.particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                p.vy += 0.2; // 重力
+                return p.life > 0;
+            });
+        }
+
+        function drawParticles() {
+            gameState.particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        // ==================== 军队移动系统 ====================
+        class Troop {
+            constructor(startX, startY, endX, endY, emoji, color, speed = 2) {
+                this.x = startX;
+                this.y = startY;
+                this.startX = startX;
+                this.startY = startY;
+                this.endX = endX;
+                this.endY = endY;
+                this.emoji = emoji;
+                this.color = color;
+                this.speed = speed;
+                this.progress = 0;
+                this.arrived = false;
+                
+                // 计算总距离
+                const dx = endX - startX;
+                const dy = endY - startY;
+                this.distance = Math.sqrt(dx * dx + dy * dy);
+            }
+
+            update() {
+                if (this.arrived) return;
+                
+                this.progress += this.speed / this.distance;
+                if (this.progress >= 1) {
+                    this.progress = 1;
+                    this.arrived = true;
+                }
+                
+                this.x = this.startX + (this.endX - this.startX) * this.progress;
+                this.y = this.startY + (this.endY - this.startY) * this.progress;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // 绘制箭头方向
+                const dx = this.endX - this.startX;
+                const dy = this.endY - this.startY;
+                const angle = Math.atan2(dy, dx);
+                ctx.rotate(angle);
+                
+                // 绘制emoji - 响应式大小
+                const isMobile = window.innerWidth <= 768;
+                const troopSize = isMobile ? (window.innerWidth <= 480 ? 18 : 20) : 24;
+                ctx.font = `${troopSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.emoji, 0, 0);
+                
+                ctx.restore();
+            }
+        }
+
+        // ==================== 游戏逻辑 ====================
+        function attackGranary() {
+            if (gameState.qiTroops < 100 || gameState.gameOver) return;
+            
+            gameState.qiTroops -= 100;
+            playBeep(300, 150, 'square');
+            
+            const positions = getMapPositions();
+            const startX = positions.qiBase.x * canvas.width;
+            const startY = positions.qiBase.y * canvas.height;
+            const endX = positions.weiCapital.x * canvas.width;
+            const endY = positions.weiCapital.y * canvas.height;
+            
+            gameState.troops.push(new Troop(startX, startY, endX, endY, '⚔️', '#4caf50', 3));
+            
+            // 分散小敌+10兵
+            gameState.weiMainForce += 10;
+            
+            setTimeout(() => {
+                createParticles(endX, endY, '#ffd700', 15);
+                playBeep(600, 200, 'sine');
+            }, 2000);
+            
+            updateUI();
+        }
+
+        function attackWeiCapital() {
+            if (gameState.qiTroops < 300 || gameState.gameOver) return;
+            
+            gameState.qiTroops -= 300;
+            playBeep(400, 200, 'square');
+            
+            const positions = getMapPositions();
+            const startX = positions.qiBase.x * canvas.width;
+            const startY = positions.qiBase.y * canvas.height;
+            const endX = positions.weiCapital.x * canvas.width;
+            const endY = positions.weiCapital.y * canvas.height;
+            
+            gameState.troops.push(new Troop(startX, startY, endX, endY, '⚔️', '#4caf50', 2.5));
+            
+            // 魏主力回防
+            if (!gameState.weiRetreating) {
+                gameState.weiRetreating = true;
+                gameState.retreatTimeLeft = 10; // 10秒回防时间
+                
+                // 创建魏军回撤箭头
+                const weiStartX = positions.weiMain.x * canvas.width;
+                const weiStartY = positions.weiMain.y * canvas.height;
+                const weiEndX = positions.weiCapital.x * canvas.width;
+                const weiEndY = positions.weiCapital.y * canvas.height;
+                
+                gameState.troops.push(new Troop(weiStartX, weiStartY, weiEndX, weiEndY, '🔴', '#ff0000', 2));
+            }
+            
+            updateUI();
+        }
+
+        function rescueZhao() {
+            if (gameState.qiTroops < 200 || gameState.gameOver) return;
+            
+            // 必须在魏军回防期间才能救赵
+            if (!gameState.weiRetreating) {
+                // 使用更友好的提示方式，避免alert在手机上体验差
+                const msg = document.createElement('div');
+                msg.textContent = '⚠️ 魏军尚未回防，此时救赵会遭遇主力！';
+                msg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:#fff;padding:20px;border-radius:10px;z-index:2000;font-size:16px;text-align:center;max-width:90%;';
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2000);
+                return;
+            }
+            
+            gameState.qiTroops -= 200;
+            playBeep(500, 250, 'square');
+            
+            const positions = getMapPositions();
+            const startX = positions.qiBase.x * canvas.width;
+            const startY = positions.qiBase.y * canvas.height;
+            const endX = positions.zhao.x * canvas.width;
+            const endY = positions.zhao.y * canvas.height;
+            
+            gameState.troops.push(new Troop(startX, startY, endX, endY, '🛡️', '#2196f3', 3));
+            
+            // 延迟检查是否成功
+            setTimeout(() => {
+                if (gameState.weiRetreating && gameState.retreatTimeLeft > 0) {
+                    // 成功救赵
+                    gameState.zhaoRescued = true;
+                    createParticles(endX, endY, '#4caf50', 30);
+                    playBeep(800, 500, 'sine');
+                    
+                    // 计算得分
+                    const levelScore = gameState.qiTroops * 2;
+                    gameState.score += levelScore;
+                    
+                    // 进入下一关
+                    setTimeout(() => {
+                        nextLevel();
+                    }, 2000);
+                }
+            }, 3000);
+            
+            updateUI();
+        }
+
+        function hardAttack() {
+            if (gameState.gameOver) return;
+            
+            // 立即失败
+            gameState.gameOver = true;
+            document.getElementById('redOverlay').classList.add('show');
+            playBeep(200, 1000, 'sawtooth');
+            
+            setTimeout(() => {
+                document.getElementById('redOverlay').classList.remove('show');
+                document.getElementById('failModal').classList.add('show');
+            }, 1500);
+        }
+
+        // ==================== 关卡系统 ====================
+        function nextLevel() {
+            gameState.level++;
+            
+            if (gameState.level > gameState.maxLevel) {
+                // 胜利
+                gameState.gameOver = true;
+                document.getElementById('finalScore').textContent = gameState.score;
+                document.getElementById('victoryText').classList.add('show');
+                playBeep(523, 300, 'sine');
+                setTimeout(() => playBeep(659, 300, 'sine'), 300);
+                setTimeout(() => playBeep(784, 500, 'sine'), 600);
+                
+                setTimeout(() => {
+                    document.getElementById('victoryText').classList.remove('show');
+                    document.getElementById('victoryModal').classList.add('show');
+                }, 3000);
+                return;
+            }
+            
+            // 重置关卡状态
+            gameState.qiTroops = 1000;
+            gameState.weiMainForce = 1000 + (gameState.level - 1) * 100;
+            gameState.timeLeft = 60 - (gameState.level - 1) * 5; // 时间递减
+            gameState.weiRetreating = false;
+            gameState.retreatTimeLeft = 0;
+            gameState.zhaoRescued = false;
+            gameState.troops = [];
+            gameState.particles = [];
+            
+            // 关卡3+随机援军
+            if (gameState.level >= 3) {
+                gameState.weiReinforcements = Math.floor(Math.random() * 50) + 20;
+                gameState.weiMainForce += gameState.weiReinforcements;
+            }
+            
+            // 关卡5多必救点
+            if (gameState.level >= 5) {
+                gameState.multipleTargets = true;
+            }
+            
+            updateUI();
+        }
+
+        // ==================== UI更新 ====================
+        function updateUI() {
+            // 更新兵力条
+            const qiPercent = (gameState.qiTroops / 1000) * 100;
+            document.getElementById('qiBar').style.width = qiPercent + '%';
+            document.getElementById('qiText').textContent = gameState.qiTroops;
+            
+            // 更新时间
+            document.getElementById('timeText').textContent = Math.max(0, Math.ceil(gameState.timeLeft));
+            
+            // 更新关卡
+            document.getElementById('levelText').textContent = `${gameState.level}/${gameState.maxLevel}`;
+            
+            // 更新得分
+            document.getElementById('scoreText').textContent = gameState.score;
+            
+            // 更新按钮状态
+            const buttons = document.querySelectorAll('.game-btn');
+            buttons.forEach(btn => {
+                if (gameState.gameOver) {
+                    btn.disabled = true;
+                } else {
+                    const cost = getButtonCost(btn.id);
+                    btn.disabled = gameState.qiTroops < cost;
+                }
+            });
+        }
+
+        function getButtonCost(btnId) {
+            const costs = {
+                'btnAttackGranary': 100,
+                'btnAttackWeiCapital': 300,
+                'btnRescueZhao': 200,
+                'btnHardAttack': 0
+            };
+            return costs[btnId] || 0;
+        }
+
+        // ==================== 绘制系统 ====================
+        function drawMap() {
+            const positions = getMapPositions();
+            
+            // 绘制山河背景线条 - 响应式线宽
+            const isMobile = window.innerWidth <= 768;
+            ctx.strokeStyle = '#5a4a3a';
+            ctx.lineWidth = isMobile ? (window.innerWidth <= 480 ? 2 : 2.5) : 3;
+            ctx.beginPath();
+            // 河流
+            ctx.moveTo(0, canvas.height * 0.3);
+            ctx.quadraticCurveTo(canvas.width * 0.3, canvas.height * 0.4, canvas.width * 0.6, canvas.height * 0.3);
+            ctx.quadraticCurveTo(canvas.width * 0.8, canvas.height * 0.2, canvas.width, canvas.height * 0.25);
+            ctx.stroke();
+            
+            // 山脉
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.2, canvas.height * 0.7);
+            ctx.lineTo(canvas.width * 0.4, canvas.height * 0.6);
+            ctx.lineTo(canvas.width * 0.6, canvas.height * 0.65);
+            ctx.lineTo(canvas.width * 0.8, canvas.height * 0.55);
+            ctx.stroke();
+            
+            // 绘制旗帜 - 响应式大小
+            const flagWidth = isMobile ? (window.innerWidth <= 480 ? 15 : 18) : 20;
+            const flagHeight = isMobile ? (window.innerWidth <= 480 ? 22 : 25) : 30;
+            const flagX = canvas.width * 0.15;
+            const flagY = canvas.height * 0.1;
+            ctx.fillStyle = '#8b0000';
+            ctx.fillRect(flagX, flagY, flagWidth, flagHeight);
+            ctx.fillStyle = '#ffd700';
+            const flagTextSize = isMobile ? (window.innerWidth <= 480 ? 12 : 14) : 16;
+            ctx.font = `${flagTextSize}px Arial`;
+            ctx.fillText('齐', flagX + flagWidth / 2, flagY + flagHeight / 2);
+            
+            // 绘制各个位置
+            Object.keys(positions).forEach(key => {
+                const pos = positions[key];
+                const x = pos.x * canvas.width;
+                const y = pos.y * canvas.height;
+                
+                // 绘制位置圆圈 - 响应式大小
+                if (key === 'zhao' && pos.underSiege && !gameState.zhaoRescued) {
+                    // 赵国被围红圈
+                    const isMobile = window.innerWidth <= 768;
+                    const circleRadius = isMobile ? (window.innerWidth <= 480 ? 35 : 40) : 50;
+                    const lineWidth = isMobile ? 3 : 4;
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = lineWidth;
+                    ctx.setLineDash([10, 5]);
+                    ctx.beginPath();
+                    ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                
+            // 绘制emoji - 响应式大小
+            const isMobile = window.innerWidth <= 768;
+            const emojiSize = isMobile ? (window.innerWidth <= 480 ? 30 : 35) : 40;
+            ctx.font = `${emojiSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pos.emoji, x, y);
+            
+            // 绘制名称 - 响应式大小
+            const nameSize = isMobile ? (window.innerWidth <= 480 ? 11 : 12) : 14;
+            const nameOffset = isMobile ? (window.innerWidth <= 480 ? 25 : 30) : 35;
+            ctx.font = `${nameSize}px Arial`;
+            ctx.fillStyle = '#fff';
+            ctx.fillText(pos.name, x, y + nameOffset);
+                
+                // 魏主力寨兵力条 - 响应式大小
+                if (key === 'weiMain') {
+                    const isMobile = window.innerWidth <= 768;
+                    const barWidth = isMobile ? (window.innerWidth <= 480 ? 60 : 70) : 80;
+                    const barHeight = isMobile ? 6 : 8;
+                    const barX = x - barWidth / 2;
+                    const barY = y - (isMobile ? (window.innerWidth <= 480 ? 40 : 45) : 50);
+                    
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                    ctx.fillRect(barX, barY, barWidth, barHeight);
+                    
+                    const forcePercent = Math.min(gameState.weiMainForce / 1500, 1);
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(barX, barY, barWidth * forcePercent, barHeight);
+                    
+                    ctx.fillStyle = '#fff';
+                    const textSize = isMobile ? (window.innerWidth <= 480 ? 8 : 9) : 10;
+                    ctx.font = `${textSize}px Arial`;
+                    ctx.fillText(`${Math.floor(gameState.weiMainForce)}`, x, barY - 4);
+                }
+                
+                // 粮仓金光闪烁 - 响应式大小
+                if (pos.glitter && (key === 'weiCapital' || key === 'weiSubCapital')) {
+                    const isMobile = window.innerWidth <= 768;
+                    const glowRadius = isMobile ? (window.innerWidth <= 480 ? 45 : 50) : 60;
+                    const time = Date.now() / 200;
+                    const alpha = 0.3 + Math.sin(time) * 0.3;
+                    ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function drawTroops() {
+            gameState.troops.forEach(troop => {
+                troop.update();
+                troop.draw();
+            });
+        }
+
+        // ==================== 游戏循环 ====================
+        function gameLoop() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制地图
+            drawMap();
+            
+            // 更新和绘制军队
+            drawTroops();
+            
+            // 更新和绘制粒子
+            updateParticles();
+            drawParticles();
+            
+            // 更新回防时间
+            if (gameState.weiRetreating && gameState.retreatTimeLeft > 0) {
+                gameState.retreatTimeLeft -= 1/60; // 60fps
+                if (gameState.retreatTimeLeft <= 0) {
+                    gameState.weiRetreating = false;
+                }
+            }
+            
+            // 更新时间
+            if (gameState.gameStarted && !gameState.gameOver) {
+                gameState.timeLeft -= 1/60;
+                if (gameState.timeLeft <= 0) {
+                    gameState.timeLeft = 0;
+                    // 时间到，失败
+                    if (!gameState.zhaoRescued) {
+                        gameState.gameOver = true;
+                        document.getElementById('redOverlay').classList.add('show');
+                        setTimeout(() => {
+                            document.getElementById('redOverlay').classList.remove('show');
+                            document.getElementById('failModal').classList.add('show');
+                        }, 1500);
+                    }
+                }
+            }
+            
+            // 检查兵力
+            if (gameState.qiTroops <= 0 && !gameState.gameOver) {
+                gameState.gameOver = true;
+                document.getElementById('redOverlay').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('redOverlay').classList.remove('show');
+                    document.getElementById('failModal').classList.add('show');
+                }, 1500);
+            }
+            
+            updateUI();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ==================== 游戏控制 ====================
+        function startGame() {
+            document.getElementById('tutorialModal').classList.remove('show');
+            gameState.gameStarted = true;
+            gameState.gameOver = false;
+            gameState.level = 1;
+            gameState.score = 0;
+            gameState.qiTroops = 1000;
+            gameState.weiMainForce = 1000;
+            gameState.timeLeft = 60;
+            gameState.weiRetreating = false;
+            gameState.retreatTimeLeft = 0;
+            gameState.zhaoRescued = false;
+            gameState.troops = [];
+            gameState.particles = [];
+            gameState.weiReinforcements = 0;
+            gameState.multipleTargets = false;
+            updateUI();
+        }
+
+        function restartGame() {
+            document.getElementById('victoryModal').classList.remove('show');
+            document.getElementById('failModal').classList.remove('show');
+            startGame();
+        }
+
+        // ==================== 事件绑定 ====================
+        document.getElementById('btnAttackGranary').addEventListener('click', attackGranary);
+        document.getElementById('btnAttackWeiCapital').addEventListener('click', attackWeiCapital);
+        document.getElementById('btnRescueZhao').addEventListener('click', rescueZhao);
+        document.getElementById('btnHardAttack').addEventListener('click', hardAttack);
+
+        // ==================== 初始化 ====================
+        updateUI();
+        gameLoop();
+        
+        // 显示教程
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('tutorialModal').classList.add('show');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -148,41 +148,23 @@
             -webkit-tap-highlight-color: transparent;
             min-height: 0;
             overflow: hidden;
-        }
-
-        /* 底部按钮栏 */
-        #buttonBar {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.8);
-            border-top: 2px solid #8b4513;
-            flex-shrink: 0;
-            flex-wrap: wrap;
-            z-index: 10;
-            overflow: visible;
-            align-items: flex-start;
-            align-content: flex-start;
             position: relative;
         }
 
-        @media (max-width: 768px) {
-            #buttonBar {
-                padding: 10px 6px;
-                gap: 6px;
-                min-height: 120px;
-                align-content: flex-start;
-            }
+        /* 地图按钮容器 - 绝对定位在Canvas上 */
+        #mapButtonContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
         }
 
-        @media (max-width: 480px) {
-            #buttonBar {
-                padding: 8px 4px;
-                gap: 4px;
-                min-height: 110px;
-                max-height: none;
-            }
+        #mapButtonContainer .game-btn {
+            position: absolute;
+            pointer-events: auto;
         }
 
         .game-btn {
@@ -200,40 +182,27 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             touch-action: manipulation;
+            white-space: nowrap;
         }
 
         @media (max-width: 768px) {
             .game-btn {
-                padding: 10px 5px;
+                padding: 10px 12px;
                 font-size: 12px;
-                min-width: calc(50% - 3px);
-                flex: 0 0 calc(50% - 3px);
-                max-width: calc(50% - 3px);
+                min-width: 100px;
                 border-width: 2px;
                 border-radius: 8px;
                 line-height: 1.3;
-                word-break: keep-all;
-                white-space: normal;
-                overflow: visible;
-                height: auto;
-                min-height: 44px;
             }
         }
 
         @media (max-width: 480px) {
             .game-btn {
-                padding: 8px 3px;
+                padding: 8px 10px;
                 font-size: 11px;
-                min-width: calc(50% - 2px);
-                flex: 0 0 calc(50% - 2px);
-                max-width: calc(50% - 2px);
+                min-width: 90px;
                 border-width: 1.5px;
                 line-height: 1.2;
-                word-break: keep-all;
-                white-space: normal;
-                overflow: visible;
-                height: auto;
-                min-height: 42px;
             }
         }
 
@@ -252,19 +221,6 @@
             cursor: not-allowed;
         }
 
-        /* 按钮文字响应式显示 */
-        .btn-text-short {
-            display: none;
-        }
-
-        @media (max-width: 480px) {
-            .btn-text-full {
-                display: none;
-            }
-            .btn-text-short {
-                display: inline;
-            }
-        }
 
         /* 弹窗遮罩 */
         .modal {
@@ -505,14 +461,15 @@
         </div>
 
         <!-- Canvas游戏画布 -->
-        <canvas id="gameCanvas"></canvas>
-
-        <!-- 底部按钮栏 -->
-        <div id="buttonBar">
-            <button class="game-btn" id="btnAttackGranary"><span class="btn-text-full">派100兵攻粮仓</span><span class="btn-text-short">攻粮仓</span> 🏛️</button>
-            <button class="game-btn" id="btnAttackWeiCapital"><span class="btn-text-full">派300兵攻魏都</span><span class="btn-text-short">攻魏都</span> 🏰</button>
-            <button class="game-btn" id="btnRescueZhao"><span class="btn-text-full">派200兵救赵国</span><span class="btn-text-short">救赵国</span> 🏯</button>
-            <button class="game-btn" id="btnHardAttack"><span class="btn-text-full">硬攻主力（自杀）</span><span class="btn-text-short">硬攻</span> ⚔️</button>
+        <div style="position: relative; flex: 1; width: 100%; height: 100%;">
+            <canvas id="gameCanvas"></canvas>
+            <!-- 地图按钮容器 -->
+            <div id="mapButtonContainer">
+                <button class="game-btn" id="btnAttackGranary">派100兵攻粮仓 🏛️</button>
+                <button class="game-btn" id="btnAttackWeiCapital">派300兵攻魏都 🏰</button>
+                <button class="game-btn" id="btnRescueZhao">派200兵救赵国 🏯</button>
+                <button class="game-btn" id="btnHardAttack">硬攻主力（自杀）⚔️</button>
+            </div>
         </div>
     </div>
 
@@ -597,35 +554,82 @@
         // 响应式Canvas
         function resizeCanvas() {
             const topBar = document.getElementById('topBar');
-            const buttonBar = document.getElementById('buttonBar');
             
-            // 等待DOM更新完成，确保按钮栏高度正确计算
             requestAnimationFrame(() => {
                 canvas.width = window.innerWidth;
-                
-                // 获取实际高度
                 const topHeight = topBar.offsetHeight || topBar.getBoundingClientRect().height;
+                canvas.height = window.innerHeight - topHeight;
                 
-                // 手机端：为按钮栏预留足够空间（2行按钮）
-                const isMobile = window.innerWidth <= 768;
-                const buttonBarMinHeight = isMobile ? (window.innerWidth <= 480 ? 110 : 120) : 0;
-                const buttonHeight = Math.max(buttonBar.offsetHeight || buttonBar.getBoundingClientRect().height, buttonBarMinHeight);
-                
-                const availableHeight = window.innerHeight - topHeight - buttonHeight;
-                canvas.height = Math.max(200, availableHeight);
-                
-                // 确保Canvas不会太大，挤压按钮栏
-                if (isMobile) {
-                    const maxCanvasHeight = window.innerHeight - topHeight - buttonBarMinHeight;
-                    canvas.height = Math.min(canvas.height, maxCanvasHeight);
-                }
+                // 更新按钮位置
+                updateButtonPositions();
             });
         }
+        
+        // 更新按钮位置 - 放在赵国下方、魏都左边
+        function updateButtonPositions() {
+            const positions = getMapPositions();
+            const container = document.getElementById('mapButtonContainer');
+            if (!container || !canvas) return;
+            
+            // 赵国位置：x: 0.5, y: 0.5
+            // 魏都位置：x: 0.9, y: 0.8
+            // 按钮放在：赵国下方（y: 0.5 + 偏移），魏都左边（x: 0.9 - 偏移）
+            
+            const zhaoX = positions.zhao.x;
+            const zhaoY = positions.zhao.y;
+            const weiX = positions.weiCapital.x;
+            const weiY = positions.weiCapital.y;
+            
+            // 按钮区域：在赵国下方，魏都左边
+            // X位置：魏都左边（0.9 - 偏移），但不要太左，在赵国和魏都之间
+            const buttonAreaX = (zhaoX + weiX) / 2 - 0.05; // 中间偏左一点
+            // Y位置：赵国下方（0.5 + 偏移）
+            const buttonAreaY = zhaoY + 0.15; // 赵国下方
+            
+            const btnAttackGranary = document.getElementById('btnAttackGranary');
+            const btnAttackWeiCapital = document.getElementById('btnAttackWeiCapital');
+            const btnRescueZhao = document.getElementById('btnRescueZhao');
+            const btnHardAttack = document.getElementById('btnHardAttack');
+            
+            // 获取按钮实际尺寸
+            const isMobile = window.innerWidth <= 768;
+            const buttonSpacing = isMobile ? 8 : 10;
+            const buttonWidth = isMobile ? (window.innerWidth <= 480 ? 100 : 120) : 140;
+            const buttonHeight = isMobile ? 36 : 40;
+            
+            // 计算起始位置（相对于Canvas）
+            const startX = buttonAreaX * canvas.width;
+            const startY = buttonAreaY * canvas.height;
+            
+            // 2x2布局，左对齐
+            // 第一行：攻粮仓、攻魏都
+            if (btnAttackGranary) {
+                btnAttackGranary.style.left = startX + 'px';
+                btnAttackGranary.style.top = startY + 'px';
+            }
+            if (btnAttackWeiCapital) {
+                btnAttackWeiCapital.style.left = (startX + buttonWidth + buttonSpacing) + 'px';
+                btnAttackWeiCapital.style.top = startY + 'px';
+            }
+            
+            // 第二行：救赵国、硬攻
+            if (btnRescueZhao) {
+                btnRescueZhao.style.left = startX + 'px';
+                btnRescueZhao.style.top = (startY + buttonHeight + buttonSpacing) + 'px';
+            }
+            if (btnHardAttack) {
+                btnHardAttack.style.left = (startX + buttonWidth + buttonSpacing) + 'px';
+                btnHardAttack.style.top = (startY + buttonHeight + buttonSpacing) + 'px';
+            }
+        }
+        
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         // 监听方向变化
         window.addEventListener('orientationchange', () => {
-            setTimeout(resizeCanvas, 300);
+            setTimeout(() => {
+                resizeCanvas();
+            }, 300);
         });
 
         // ==================== 地图位置定义 ====================

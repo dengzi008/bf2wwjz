@@ -19,12 +19,15 @@
             position: fixed;
             width: 100%;
             height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
         /* 游戏容器 */
         #gameContainer {
             width: 100vw;
             height: 100vh;
+            max-height: 100vh;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -136,7 +139,7 @@
 
         /* Canvas画布 */
         #gameCanvas {
-            flex: 1;
+            flex: 1 1 auto;
             width: 100%;
             height: 100%;
             background: linear-gradient(180deg, #87ceeb 0%, #98d8c8 30%, #f7dc6f 60%, #85c1e2 100%);
@@ -144,6 +147,7 @@
             touch-action: none;
             -webkit-tap-highlight-color: transparent;
             min-height: 0;
+            overflow: hidden;
         }
 
         /* 底部按钮栏 */
@@ -157,16 +161,17 @@
             flex-shrink: 0;
             flex-wrap: wrap;
             z-index: 10;
-            min-height: auto;
             overflow: visible;
             align-items: flex-start;
+            align-content: flex-start;
+            position: relative;
         }
 
         @media (max-width: 768px) {
             #buttonBar {
                 padding: 10px 6px;
                 gap: 6px;
-                min-height: auto;
+                min-height: 120px;
                 align-content: flex-start;
             }
         }
@@ -175,7 +180,8 @@
             #buttonBar {
                 padding: 8px 4px;
                 gap: 4px;
-                min-height: auto;
+                min-height: 110px;
+                max-height: none;
             }
         }
 
@@ -198,10 +204,10 @@
 
         @media (max-width: 768px) {
             .game-btn {
-                padding: 12px 6px;
+                padding: 10px 5px;
                 font-size: 12px;
                 min-width: calc(50% - 3px);
-                flex: 1 1 calc(50% - 3px);
+                flex: 0 0 calc(50% - 3px);
                 max-width: calc(50% - 3px);
                 border-width: 2px;
                 border-radius: 8px;
@@ -209,21 +215,25 @@
                 word-break: keep-all;
                 white-space: normal;
                 overflow: visible;
+                height: auto;
+                min-height: 44px;
             }
         }
 
         @media (max-width: 480px) {
             .game-btn {
-                padding: 10px 4px;
+                padding: 8px 3px;
                 font-size: 11px;
                 min-width: calc(50% - 2px);
-                flex: 1 1 calc(50% - 2px);
+                flex: 0 0 calc(50% - 2px);
                 max-width: calc(50% - 2px);
                 border-width: 1.5px;
                 line-height: 1.2;
                 word-break: keep-all;
                 white-space: normal;
                 overflow: visible;
+                height: auto;
+                min-height: 42px;
             }
         }
 
@@ -592,16 +602,22 @@
             // 等待DOM更新完成，确保按钮栏高度正确计算
             requestAnimationFrame(() => {
                 canvas.width = window.innerWidth;
+                
+                // 获取实际高度
                 const topHeight = topBar.offsetHeight || topBar.getBoundingClientRect().height;
-                const buttonHeight = buttonBar.offsetHeight || buttonBar.getBoundingClientRect().height;
+                
+                // 手机端：为按钮栏预留足够空间（2行按钮）
+                const isMobile = window.innerWidth <= 768;
+                const buttonBarMinHeight = isMobile ? (window.innerWidth <= 480 ? 110 : 120) : 0;
+                const buttonHeight = Math.max(buttonBar.offsetHeight || buttonBar.getBoundingClientRect().height, buttonBarMinHeight);
+                
                 const availableHeight = window.innerHeight - topHeight - buttonHeight;
                 canvas.height = Math.max(200, availableHeight);
                 
-                // 手机端优化：确保Canvas有足够空间
-                if (window.innerWidth <= 480) {
-                    canvas.style.minHeight = '200px';
-                } else {
-                    canvas.style.minHeight = '0';
+                // 确保Canvas不会太大，挤压按钮栏
+                if (isMobile) {
+                    const maxCanvasHeight = window.innerHeight - topHeight - buttonBarMinHeight;
+                    canvas.height = Math.min(canvas.height, maxCanvasHeight);
                 }
             });
         }

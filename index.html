@@ -565,26 +565,15 @@
             });
         }
         
-        // 更新按钮位置 - 放在赵国下方、魏都左边
+        // 更新按钮位置 - 放在赵国正下方
         function updateButtonPositions() {
             const positions = getMapPositions();
             const container = document.getElementById('mapButtonContainer');
             if (!container || !canvas) return;
             
             // 赵国位置：x: 0.5, y: 0.5
-            // 魏都位置：x: 0.9, y: 0.8
-            // 按钮放在：赵国下方（y: 0.5 + 偏移），魏都左边（x: 0.9 - 偏移）
-            
-            const zhaoX = positions.zhao.x;
-            const zhaoY = positions.zhao.y;
-            const weiX = positions.weiCapital.x;
-            const weiY = positions.weiCapital.y;
-            
-            // 按钮区域：在赵国下方，魏都左边
-            // X位置：魏都左边（0.9 - 偏移），但不要太左，在赵国和魏都之间
-            const buttonAreaX = (zhaoX + weiX) / 2 - 0.05; // 中间偏左一点
-            // Y位置：赵国下方（0.5 + 偏移）
-            const buttonAreaY = zhaoY + 0.15; // 赵国下方
+            const zhaoX = positions.zhao.x; // 0.5
+            const zhaoY = positions.zhao.y; // 0.5
             
             const btnAttackGranary = document.getElementById('btnAttackGranary');
             const btnAttackWeiCapital = document.getElementById('btnAttackWeiCapital');
@@ -597,11 +586,17 @@
             const buttonWidth = isMobile ? (window.innerWidth <= 480 ? 100 : 120) : 140;
             const buttonHeight = isMobile ? 36 : 40;
             
-            // 计算起始位置（相对于Canvas）
-            const startX = buttonAreaX * canvas.width;
-            const startY = buttonAreaY * canvas.height;
+            // 计算按钮组的总宽度（2个按钮 + 1个间距）
+            const totalButtonWidth = buttonWidth * 2 + buttonSpacing;
             
-            // 2x2布局，左对齐
+            // 按钮组中心对齐到赵国X坐标
+            // 起始X = 赵国X - 按钮组宽度的一半
+            const startX = zhaoX * canvas.width - totalButtonWidth / 2;
+            
+            // Y位置：赵国下方
+            const startY = (zhaoY + 0.15) * canvas.height; // 赵国下方0.15倍高度
+            
+            // 2x2布局，居中对齐
             // 第一行：攻粮仓、攻魏都
             if (btnAttackGranary) {
                 btnAttackGranary.style.left = startX + 'px';

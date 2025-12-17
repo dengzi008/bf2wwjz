@@ -28,6 +28,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
         }
 
         /* 顶部信息栏 */
@@ -142,6 +143,7 @@
             cursor: crosshair;
             touch-action: none;
             -webkit-tap-highlight-color: transparent;
+            min-height: 0;
         }
 
         /* 底部按钮栏 */
@@ -155,19 +157,25 @@
             flex-shrink: 0;
             flex-wrap: wrap;
             z-index: 10;
+            min-height: auto;
+            overflow: visible;
+            align-items: flex-start;
         }
 
         @media (max-width: 768px) {
             #buttonBar {
-                padding: 12px 8px;
-                gap: 8px;
+                padding: 10px 6px;
+                gap: 6px;
+                min-height: auto;
+                align-content: flex-start;
             }
         }
 
         @media (max-width: 480px) {
             #buttonBar {
-                padding: 10px 5px;
-                gap: 6px;
+                padding: 8px 4px;
+                gap: 4px;
+                min-height: auto;
             }
         }
 
@@ -190,22 +198,32 @@
 
         @media (max-width: 768px) {
             .game-btn {
-                padding: 18px 10px;
-                font-size: 14px;
-                min-width: calc(50% - 4px);
-                flex: 1 1 calc(50% - 4px);
+                padding: 12px 6px;
+                font-size: 12px;
+                min-width: calc(50% - 3px);
+                flex: 1 1 calc(50% - 3px);
+                max-width: calc(50% - 3px);
                 border-width: 2px;
-                border-radius: 10px;
+                border-radius: 8px;
+                line-height: 1.3;
+                word-break: keep-all;
+                white-space: normal;
+                overflow: visible;
             }
         }
 
         @media (max-width: 480px) {
             .game-btn {
-                padding: 16px 8px;
-                font-size: 13px;
-                min-width: calc(50% - 3px);
-                flex: 1 1 calc(50% - 3px);
-                border-width: 2px;
+                padding: 10px 4px;
+                font-size: 11px;
+                min-width: calc(50% - 2px);
+                flex: 1 1 calc(50% - 2px);
+                max-width: calc(50% - 2px);
+                border-width: 1.5px;
+                line-height: 1.2;
+                word-break: keep-all;
+                white-space: normal;
+                overflow: visible;
             }
         }
 
@@ -222,6 +240,20 @@
         .game-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        /* 按钮文字响应式显示 */
+        .btn-text-short {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .btn-text-full {
+                display: none;
+            }
+            .btn-text-short {
+                display: inline;
+            }
         }
 
         /* 弹窗遮罩 */
@@ -467,10 +499,10 @@
 
         <!-- 底部按钮栏 -->
         <div id="buttonBar">
-            <button class="game-btn" id="btnAttackGranary">派100兵攻粮仓 🏛️</button>
-            <button class="game-btn" id="btnAttackWeiCapital">派300兵攻魏都 🏰</button>
-            <button class="game-btn" id="btnRescueZhao">派200兵救赵国 🏯</button>
-            <button class="game-btn" id="btnHardAttack">硬攻主力（自杀）⚔️</button>
+            <button class="game-btn" id="btnAttackGranary"><span class="btn-text-full">派100兵攻粮仓</span><span class="btn-text-short">攻粮仓</span> 🏛️</button>
+            <button class="game-btn" id="btnAttackWeiCapital"><span class="btn-text-full">派300兵攻魏都</span><span class="btn-text-short">攻魏都</span> 🏰</button>
+            <button class="game-btn" id="btnRescueZhao"><span class="btn-text-full">派200兵救赵国</span><span class="btn-text-short">救赵国</span> 🏯</button>
+            <button class="game-btn" id="btnHardAttack"><span class="btn-text-full">硬攻主力（自杀）</span><span class="btn-text-short">硬攻</span> ⚔️</button>
         </div>
     </div>
 
@@ -556,20 +588,28 @@
         function resizeCanvas() {
             const topBar = document.getElementById('topBar');
             const buttonBar = document.getElementById('buttonBar');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - topBar.offsetHeight - buttonBar.offsetHeight;
             
-            // 手机端优化：确保Canvas有足够空间
-            if (window.innerWidth <= 480) {
-                // 小屏幕设备，进一步优化
-                canvas.style.minHeight = '200px';
-            }
+            // 等待DOM更新完成，确保按钮栏高度正确计算
+            requestAnimationFrame(() => {
+                canvas.width = window.innerWidth;
+                const topHeight = topBar.offsetHeight || topBar.getBoundingClientRect().height;
+                const buttonHeight = buttonBar.offsetHeight || buttonBar.getBoundingClientRect().height;
+                const availableHeight = window.innerHeight - topHeight - buttonHeight;
+                canvas.height = Math.max(200, availableHeight);
+                
+                // 手机端优化：确保Canvas有足够空间
+                if (window.innerWidth <= 480) {
+                    canvas.style.minHeight = '200px';
+                } else {
+                    canvas.style.minHeight = '0';
+                }
+            });
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         // 监听方向变化
         window.addEventListener('orientationchange', () => {
-            setTimeout(resizeCanvas, 100);
+            setTimeout(resizeCanvas, 300);
         });
 
         // ==================== 地图位置定义 ====================
